@@ -1,35 +1,62 @@
-// App.jsx
-// This is the main entry point for the app. Students should not need to change this file except to add new routes or wrap the app in providers.
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "./App.css";
-import MyButton from "./components/MyButton";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-
-// Home/Landing page component
-function Home() {
-  // This is the landing page. Students should see the Login and Register buttons here.
-  return (
-    <div>
-      <h1>Welcome to my app</h1>
-      <MyButton />
-    </div>
-  );
-}
+import React, { useState } from "react";
 
 export default function App() {
-  // The Router wraps the app and provides navigation between pages.
+  const [email, setEmail] = useState("");
+
   return (
-    <Router>
-      <Routes>
-        {/* Landing page route */}
-        <Route path="/" element={<Home />} />
-        {/* Login page route */}
-        <Route path="/login" element={<Login />} />
-        {/* Register page route */}
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+
+      {/* Main Card */}
+      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid md:grid-cols-2">
+
+        {/* LEFT - Branding */}
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-600 text-white p-12 flex flex-col justify-center">
+
+          <h1 className="text-5xl font-bold mb-4 tracking-tight">
+            Feel It
+          </h1>
+
+          <p className="text-blue-100 text-lg mb-8">
+            A safe place to connect, share emotions and build real friendships.
+          </p>
+
+          <div className="space-y-3 text-blue-100">
+            <div>✔ Real people, real conversations</div>
+            <div>✔ Safe & supportive community</div>
+            <div>✔ Find friends instantly</div>
+          </div>
+
+        </div>
+
+        {/* RIGHT - Login */}
+        <div className="p-12 flex flex-col justify-center">
+
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back
+          </h2>
+
+          <p className="text-gray-500 mb-6">
+            Enter your email to continue
+          </p>
+
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+          />
+
+          <button className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md">
+            Continue
+          </button>
+
+          <p className="text-xs text-gray-400 mt-5 text-center">
+            By continuing you agree to our Terms & Privacy Policy
+          </p>
+
+        </div>
+      </div>
+    </div>
   );
 }
