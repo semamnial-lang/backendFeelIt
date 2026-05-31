@@ -7,15 +7,7 @@ const TypingField = ({ type = 'text', placeholder = '', value, onChange, ...prop
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      style={{
-        padding: '10px',
-        fontSize: '16px',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        width: '100%',
-        boxSizing: 'border-box',
-        marginBottom: '10px'
-      }}
+      className="typing-field"
       {...props}
     />
   );

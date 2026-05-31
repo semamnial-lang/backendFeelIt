@@ -28,6 +28,98 @@ let client = null;
 let db = null;
 let collections = {};
 
+const fallbackData = {
+  users: [],
+  user_health: [],
+};
+
+function createObjectId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function matchesFilter(document, filter) {
+  return Object.entries(filter).every(([key, value]) => {
+    if (typeof value === "object" && value !== null) {
+      return Object.entries(value).every(([operator, compareValue]) => {
+        if (operator === "$eq") {
+          return document[key] === compareValue;
+        }
+        return false;
+      });
+    }
+
+    return document[key] === value;
+  });
+}
+
+function createFallbackCollection(name) {
+  if (!fallbackData[name]) {
+    fallbackData[name] = [];
+  }
+
+  const storage = fallbackData[name];
+  return {
+    async insertOne(document) {
+      const doc = { ...document, _id: createObjectId() };
+      storage.push(doc);
+      return { insertedId: doc._id };
+    },
+
+    async findOne(filter) {
+      return storage.find((doc) => matchesFilter(doc, filter)) || null;
+    },
+
+    async updateOne(filter, update, options = {}) {
+      const existing = storage.find((doc) => matchesFilter(doc, filter));
+
+      if (existing) {
+        if (update.$set) {
+          Object.assign(existing, update.$set);
+        }
+        return { matchedCount: 1, modifiedCount: 1, upsertedId: null };
+      }
+
+      if (options.upsert) {
+        const newDoc = { ...filter, _id: createObjectId() };
+        if (update.$setOnInsert) {
+          Object.assign(newDoc, update.$setOnInsert);
+        }
+        if (update.$set) {
+          Object.assign(newDoc, update.$set);
+        }
+        storage.push(newDoc);
+        return { matchedCount: 0, modifiedCount: 0, upsertedId: newDoc._id };
+      }
+
+      return { matchedCount: 0, modifiedCount: 0, upsertedId: null };
+    },
+
+    async createIndex() {
+      return null;
+    },
+  };
+}
+
+function createFallbackDatabase() {
+  return {
+    databaseName: DEFAULT_DB_NAME,
+    async listCollections() {
+      return {
+        toArray: async () =>
+          Object.keys(fallbackData).map((name) => ({ name })),
+      };
+    },
+    async createCollection(name) {
+      if (!fallbackData[name]) {
+        fallbackData[name] = [];
+      }
+    },
+    collection(name) {
+      return createFallbackCollection(name);
+    },
+  };
+}
+
 async function ensureCollections(database) {
   const existing = await database
     .listCollections({}, { nameOnly: true })
@@ -59,16 +151,33 @@ export async function connectToDatabase() {
 
   const uri = process.env.MONGODB_URI;
   if (!uri) {
-    throw new Error("MONGODB_URI is not set.");
+    console.warn("MONGODB_URI is not set. Starting in-memory fallback database.");
+    client = { close: async () => {} };
+    db = createFallbackDatabase();
+    await ensureCollections(db);
+
+    console.log(`Using fallback database: ${db.databaseName}`);
+    return { client, db, collections };
   }
 
   client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
-  await client.connect();
-  db = client.db(DEFAULT_DB_NAME);
-  await ensureCollections(db);
 
-  console.log(`MongoDB connected: ${db.databaseName}`);
-  return { client, db, collections };
+  try {
+    await client.connect();
+    db = client.db(DEFAULT_DB_NAME);
+    await ensureCollections(db);
+
+    console.log(`MongoDB connected: ${db.databaseName}`);
+    return { client, db, collections };
+  } catch (error) {
+    console.warn("MongoDB connection failed, using fallback database:", error.message);
+    client = { close: async () => {} };
+    db = createFallbackDatabase();
+    await ensureCollections(db);
+
+    console.log(`Using fallback database: ${db.databaseName}`);
+    return { client, db, collections };
+  }
 }
 
 export function getDb() {
