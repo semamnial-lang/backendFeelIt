@@ -99,3 +99,13 @@ export function saveUserMoodState(email, mood, note) {
     date: today,
   };
 }
+
+export function clearTodayMood(email) {
+  const normalized = normalizeEmail(email);
+  if (!normalized) return false;
+
+  localStorage.removeItem(getStorageKey(normalized, 'mood'));
+  localStorage.removeItem(getStorageKey(normalized, 'note'));
+  localStorage.removeItem(getStorageKey(normalized, 'date'));
+  return true;
+}
