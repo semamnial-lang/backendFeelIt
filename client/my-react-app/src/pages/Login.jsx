@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { setCurrentEmail } from "../utils/moodStorage";
+import { setCurrentEmail, getCurrentEmail, getEmailList } from "../utils/moodStorage";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
 
@@ -32,7 +32,8 @@ async function signInWithServer(email, password) {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const savedEmails = getEmailList();
+  const [email, setEmail] = useState(getCurrentEmail() || "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -63,6 +64,23 @@ export default function Login() {
             required
           />
         </div>
+        {savedEmails.length > 0 && (
+          <div className="auth-helper" style={{ marginBottom: "1rem" }}>
+            <p style={{ margin: "0 0 0.5rem" }}>בחר אימייל שמור:</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              {savedEmails.map((savedEmail) => (
+                <button
+                  key={savedEmail}
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setEmail(savedEmail)}
+                >
+                  {savedEmail}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="auth-field">
           <label>סיסמה</label>
           <input

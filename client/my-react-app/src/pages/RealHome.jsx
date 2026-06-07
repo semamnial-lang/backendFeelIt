@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const options = [
@@ -20,8 +20,41 @@ const options = [
   },
 ];
 
+const initialQuickPeople = [
+  { name: "דניאל", age: 27, mood: "🙂", isOnline: true },
+  { name: "נועה", age: 22, mood: "💬", isOnline: true },
+  { name: "יואב", age: 24, mood: "💙", isOnline: false },
+];
+
+function getPresenceColor(isOnline) {
+  return isOnline ? "#22c55e" : "#94a3b8";
+}
+
+function getPresenceText(isOnline) {
+  return isOnline ? "מחובר" : "לא מחובר";
+}
+
+function getNextPresence(isOnline) {
+  if (isOnline) return Math.random() < 0.85 ? true : false;
+  return Math.random() < 0.25 ? true : false;
+}
+
 export default function RealHome() {
   const navigate = useNavigate();
+  const [quickPeople, setQuickPeople] = useState(initialQuickPeople);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuickPeople((prevPeople) =>
+        prevPeople.map((person) => ({
+          ...person,
+          isOnline: getNextPresence(person.isOnline),
+        }))
+      );
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div
@@ -124,7 +157,7 @@ export default function RealHome() {
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       <section className="people-section">
         <div className="section-heading">
@@ -143,15 +176,26 @@ export default function RealHome() {
                   <p>{person.age} גיל</p>
                 </div>
               </div>
-              <div className="person-tags">
+              <div className="person-tags" style={{ alignItems: "center" }}>
                 <span>מחפש/ת: חברים חדשים</span>
-                <span>{person.status}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span
+                    style={{
+                      width: "0.65rem",
+                      height: "0.65rem",
+                      borderRadius: "50%",
+                      background: getPresenceColor(person.isOnline),
+                      display: "inline-block",
+                    }}
+                  />
+                  {getPresenceText(person.isOnline)}
+                </span>
               </div>
               <button type="button" className="btn btn-primary">שלח הודעה</button>
             </article>
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

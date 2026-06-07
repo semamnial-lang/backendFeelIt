@@ -41,6 +41,7 @@ export default function UserHome() {
             <div className="card-actions">
               <button className="btn btn-secondary" onClick={() => navigate('/profile')}>פרופיל</button>
               <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>סיכום</button>
+              <button className="btn btn-secondary" onClick={() => navigate('/talk-to-professional')}>התייעצות מקצועית</button>
               <button className="btn btn-secondary" onClick={() => { clearCurrentEmail(); navigate('/'); }}>התנתק</button>
             </div>
           </div>

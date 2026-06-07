@@ -4,9 +4,16 @@ import ProConnectionCard from "../components/ProConnectionCard";
 import ProChatMessages from "../components/ProChatMessages";
 import ProChatComposer from "../components/ProChatComposer";
 
-const dummyProfessional = {
+const professional1 = {
   name: "Dr. Maya Ben",
   role: "Licensed Mental Health Counselor",
+  status: "Connected",
+};
+
+const professional2 = {
+  name: "Dr. Sarah Cohen",
+  role: "Clinical Psychologist",
+  status: "Not Connected",
 };
 
 const responsePool = [
@@ -18,17 +25,18 @@ const responsePool = [
 
 export default function TalkToProfessional() {
   const navigate = useNavigate();
+  const [professional, setProfessional] = useState(professional1);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: "system",
       senderName: "System",
-      text: `${dummyProfessional.name} is now connected to this chat.`,
+      text: `${professional1.name} is now connected to this chat.`,
     },
     {
       id: 2,
       sender: "professional",
-      senderName: dummyProfessional.name,
+      senderName: professional1.name,
       text: "Hi, I am glad you reached out today. How are you feeling right now?",
     },
   ]);
@@ -53,7 +61,7 @@ export default function TalkToProfessional() {
         {
           id: prev.length + 1,
           sender: "professional",
-          senderName: dummyProfessional.name,
+          senderName: professional.name,
           text: randomReply,
         },
       ]);
@@ -93,14 +101,79 @@ export default function TalkToProfessional() {
           </p>
         </div>
 
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+          <button
+            type="button"
+            onClick={() => setProfessional(professional1)}
+            style={{
+              background: professional.name === professional1.name ? "#34d399" : "#f1f5f9",
+              color: professional.name === professional1.name ? "white" : "#0f172a",
+              border: "1px solid #cbd5e1",
+              borderRadius: "14px",
+              padding: "0.8rem 1rem",
+              cursor: "pointer",
+              fontWeight: professional.name === professional1.name ? "600" : "400",
+            }}
+          >
+            {professional1.name} ✓
+          </button>
+          <button
+            type="button"
+            onClick={() => setProfessional(professional2)}
+            style={{
+              background: professional.name === professional2.name ? "#f8fafc" : "#f1f5f9",
+              color: professional.name === professional2.name ? "#0f172a" : "#475569",
+              border: "1px solid #cbd5e1",
+              borderRadius: "14px",
+              padding: "0.8rem 1rem",
+              cursor: "pointer",
+              fontWeight: professional.name === professional2.name ? "600" : "400",
+            }}
+          >
+            {professional2.name}
+          </button>
+        </div>
+
         <ProConnectionCard
-          professional={dummyProfessional}
+          professional={professional}
           onBack={() => navigate("/dashboard")}
         />
 
-        <ProChatMessages messages={messages} />
+        {professional.status !== "Connected" && (
+          <section
+            style={{
+              background: "#f8fafc",
+              border: "1px solid #dbeafe",
+              borderRadius: "18px",
+              padding: "1rem",
+              color: "#334155",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: "1rem" }}>
+              {professional.name} is currently not available. Please try again later or select the other professional.
+            </p>
+          </section>
+        )}
 
-        <ProChatComposer onSend={sendUserMessage} />
+        <ProChatMessages
+          messages={
+            professional.status === "Connected"
+              ? messages
+              : [
+                  {
+                    id: 1,
+                    sender: "system",
+                    senderName: "System",
+                    text: `${professional.name} is not connected right now.`,
+                  },
+                ]
+          }
+        />
+
+        <ProChatComposer
+          onSend={sendUserMessage}
+          disabled={professional.status !== "Connected"}
+        />
       </div>
     </div>
   );

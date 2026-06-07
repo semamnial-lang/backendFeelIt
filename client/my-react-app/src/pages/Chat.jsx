@@ -1,10 +1,74 @@
-import React, { useRef, useState } from "react";
+  import React, { useEffect, useRef, useState } from "react";
 
-const contacts = [
-  { id: "manasse", name: "Manasse Kofi", intro: "נשמח לשמוע איך אתה מרגיש היום.", status: "מתחבר עכשיו" },
-  { id: "shay", name: "shay yadid", intro: "מוכן לשיחה, בוא נדבר.", status: "באינטרנט" },
-  { id: "avic", name: "Avigail", intro: "אני כאן כדי להקשיב.", status: "זמין" },
+const initialContacts = [
+  {
+    id: "manasse",
+    name: "Manasse Kofi",
+    intro: "נשמח לשמוע איך אתה מרגיש היום.",
+    need: "להתבטא על רגשות ולפרוק מהכאב",
+    isOnline: true,
+  },
+  {
+    id: "shay",
+    name: "shay yadid",
+    intro: "מוכן לשיחה, בוא נדבר.",
+    need: "להרגיש פחות לבד ולקבל תמיכה",
+    isOnline: true,
+  },
+  {
+    id: "avic",
+    name: "Avigail",
+    intro: "אני כאן להקשיב.",
+    need: "לשחרר את המתח ולהתמקד ברוגע",
+    isOnline: false,
+  },
 ];
+
+function getStatusColor(isOnline) {
+  return isOnline ? "#22c55e" : "#94a3b8";
+}
+
+function getStatusText(isOnline) {
+  return isOnline ? "מחובר" : "לא מחובר";
+}
+
+function getNextOnline(isOnline) {
+  if (isOnline) return Math.random() < 0.8 ? true : false;
+  return Math.random() < 0.25 ? true : false;
+}
+
+function getContactReply(contactId, userText) {
+  const normalized = userText?.trim().toLowerCase() || "";
+  const contactNeeds = {
+    manasse: "להתבטא על רגשות ולפרוק מהכאב",
+    shay: "להרגיש פחות לבד ולקבל תמיכה",
+    avic: "לשחרר את המתח ולהתמקד ברוגע",
+  };
+
+  const needText = contactNeeds[contactId] || "אני כאן בשבילך";
+
+  if (/עצוב|דכדוך|כועס|עצבים|בוכה|מבואס/.test(normalized)) {
+    return `אני שומע שיש רגשות קשים עכשיו. אם תוכל להסביר קצת יותר על זה, אוכל להיות כאן איתך.`;
+  }
+
+  if (/לחץ|חרדה|פחד|מתוח|לחוצה/.test(normalized)) {
+    return `זה נשמע שאתה חווה הרבה לחץ. בוא ננסה להתמקד יחד ברגע הזה ולהוריד קצת מהמתח.`;
+  }
+
+  if (/בודד|לבד|אין לי|אין כלום/.test(normalized)) {
+    return `זה נשמע שאתה מרגיש לבד. אני כאן להקשיב ויחד ננסה למצוא משהו שידאג לך.`;
+  }
+
+  if (/טוב|בסדר|סבבה|סבבה/.test(normalized)) {
+    return `נחמד לשמוע שזה קצת טוב. אשמח לשמוע מה עוזר לך להרגיש ככה.`;
+  }
+
+  if (/מה לעשות|איך|עזרה|עוזר/.test(normalized)) {
+    return `אני כאן כדי לעזור. ספר לי מה הכי קשה כרגע ואנסה לתת לך תמיכה.`;
+  }
+
+  return `שמתי לב שאתה רוצה ${needText}. אם תספר לי עוד, אני יכול להקשיב ולעזור כמיטב יכולתי.`;
+}
 
 const initialMessages = {
   manasse: [
@@ -20,7 +84,8 @@ const initialMessages = {
 };
 
 export default function Chat() {
-  const [selectedContact, setSelectedContact] = useState(contacts[0].id);
+  const [contacts, setContacts] = useState(initialContacts);
+  const [selectedContact, setSelectedContact] = useState(initialContacts[0].id);
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -28,6 +93,19 @@ export default function Chat() {
 
   const currentContact = contacts.find((contact) => contact.id === selectedContact);
   const chatMessages = messages[selectedContact] || [];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setContacts((prevContacts) =>
+        prevContacts.map((contact) => ({
+          ...contact,
+          isOnline: getNextOnline(contact.isOnline),
+        }))
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const getTime = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -51,6 +129,24 @@ export default function Chat() {
     }));
     setDraft("");
     setSelectedImage(null);
+
+    if (currentContact?.isOnline) {
+      window.setTimeout(() => {
+        const replyText = getContactReply(selectedContact, draft);
+        setMessages((prev) => ({
+          ...prev,
+          [selectedContact]: [
+            ...prev[selectedContact],
+            {
+              sender: "other",
+              type: "text",
+              text: replyText,
+              time: getTime(),
+            },
+          ],
+        }));
+      }, 900);
+    }
   };
 
   const handleImageSelect = (event) => {
@@ -93,7 +189,18 @@ export default function Chat() {
                   <strong>{contact.name}</strong>
                   <p>{contact.intro}</p>
                 </div>
-                <span className="contact-status">{contact.status}</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                  <span
+                    style={{
+                      width: "0.75rem",
+                      height: "0.75rem",
+                      borderRadius: "50%",
+                      background: getStatusColor(contact.isOnline),
+                      marginBottom: "0.4rem",
+                    }}
+                  />
+                  <span className="contact-status">{getStatusText(contact.isOnline)}</span>
+                </div>
               </button>
             ))}
           </div>
@@ -103,7 +210,22 @@ export default function Chat() {
           <div className="chat-header">
             <div>
               <p className="eyebrow">שיחה עם</p>
-              <h2>{currentContact?.name}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                <h2 style={{ margin: 0 }}>{currentContact?.name}</h2>
+                <span
+                  style={{
+                    width: "0.85rem",
+                    height: "0.85rem",
+                    borderRadius: "50%",
+                    background: getStatusColor(currentContact?.isOnline),
+                    display: currentContact ? "inline-block" : "none",
+                  }}
+                />
+              </div>
+              <p style={{ margin: "0.25rem 0 0", color: "#64748b" }}>{getStatusText(currentContact?.isOnline)}</p>
+              <p style={{ margin: "0.35rem 0 0", color: "#475569", fontSize: "0.95rem" }}>
+                {currentContact?.need}
+              </p>
             </div>
             <button type="button" className="btn btn-secondary" onClick={handleStartCall}>
               התחלת שיחה
