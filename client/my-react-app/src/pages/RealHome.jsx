@@ -1,19 +1,22 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import DailyMoodPrompt from "../components/DailyMoodPrompt";
 
-const quickPeople = [
+const options = [
+  { label: "Profile", description: "View and edit your profile." },
   {
-    name: "Manasse Kofi",
-    status: "מוזיקה",
-    mood: "😌",
-    age: "30",
+    label: "Activity / Games",
+    description: "See today’s activity and play uplifting games.",
+  },
+  { label: "Messages", description: "Read and send messages." },
+  { label: "Friends", description: "Manage your friends list." },
+  {
+    label: "Talk to a Professional",
+    description: "Connect with a counselor or coach.",
+    route: "/talk-to-professional",
   },
   {
-    name: "shay yadid",
-    status: "בית לחם",
-    mood: "🙂",
-    age: "40",
+    label: "Call / Video Call",
+    description: "Start a voice or video conversation.",
   },
 ];
 
@@ -21,68 +24,105 @@ export default function RealHome() {
   const navigate = useNavigate();
 
   return (
-    <main className="dashboard-panel home-dashboard">
-      <section className="home-header">
-        <div className="home-welcome">
-          <p className="eyebrow">שלום,</p>
-          <h1>Sem Amnial</h1>
-          <p className="home-description">
-            הדשבורד החברתי שלך במראה חדש: מצב רוח, חיבור מהיר וקהילות בפורמט של אפליקציה פרימיום.
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "3rem 1rem",
+        background: "#f3f7ff",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "980px",
+          background: "white",
+          borderRadius: "26px",
+          boxShadow: "0 26px 70px rgba(15, 23, 42, 0.12)",
+          padding: "2.5rem",
+          border: "1px solid #dbeafe",
+        }}
+      >
+        <div style={{ marginBottom: "2rem", textAlign: "center" }}>
+          <h1 style={{ margin: 0, fontSize: "3rem", color: "#0f172a" }}>
+            Your Home
+          </h1>
+          <p
+            style={{
+              margin: "1rem auto 0",
+              maxWidth: "680px",
+              color: "#475569",
+              fontSize: "1.05rem",
+            }}
+          >
+            Choose one of the options below to explore your profile, activity,
+            messaging, friends, professional support, and calls.
           </p>
         </div>
 
-        <div className="home-profile-summary">
-          <div className="home-avatar">S</div>
-          <div>
-            <p className="profile-name">Sem Amnial</p>
-            <p className="profile-meta">מוזיקה • מחפש/ת חברים חדשים</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-feature-grid">
-        <article className="glass-card home-stats-card">
-          <div className="card-title">איך אתה מרגיש היום?</div>
-          <p className="card-copy">בחר את מצב הרוח שלך וראה את המסע היומי שלך עם תמיכה ונתונים.</p>
-          <DailyMoodPrompt />
-        </article>
-
-        <article className="glass-card home-cta-card">
-          <div>
-            <p className="eyebrow">אני צריך/ה לדבר עכשיו</p>
-            <h2>מצא מישהו פנוי לשיחה</h2>
-            <p className="subtext">יש לנו אנשים זמינים לתמיכה, שיתוף או פשוט להיות כאן בשבילך.</p>
-          </div>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/chat')}>
-            דבר עכשיו
-          </button>
-        </article>
-      </section>
-
-      <section className="home-grid">
-        <article className="glass-card home-quick-card" onClick={() => navigate('/groups')}>
-          <div className="quick-icon">👥</div>
-          <div className="card-title">קבוצות</div>
-          <p className="card-copy">הצטרף לשיחות פעילות וקהילות שנוצרות סביב נושאים שמעניינים אותך.</p>
-        </article>
-        <article className="glass-card home-quick-card" onClick={() => navigate('/search')}>
-          <div className="quick-icon">🔎</div>
-          <div className="card-title">גלה אנשים</div>
-          <p className="card-copy">מצא חברים חדשים, קהילות ושיחות לפי תחומי העניין שלך.</p>
-        </article>
-      </section>
-
-      <section className="glass-card challenge-card">
-        <div className="challenge-head">
-          <div>
-            <p className="eyebrow">אתגר יומי</p>
-            <h2>מה החלום הכי מטורף שחלמת בזמן האחרון?</h2>
-          </div>
-          <span className="challenge-icon">✨</span>
-        </div>
-        <div className="challenge-input-row">
-          <input className="input-glow" type="text" placeholder="הכנס/י את תשובתך..." />
-          <button type="button" className="btn btn-secondary">שלח</button>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "1.25rem",
+          }}
+        >
+          {options.map((option) => (
+            <div
+              key={option.label}
+              style={{
+                background: "#eff6ff",
+                padding: "1.5rem",
+                borderRadius: "22px",
+                border: "1px solid #bfdbfe",
+                minHeight: "170px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <h2
+                  style={{ margin: 0, fontSize: "1.35rem", color: "#0f172a" }}
+                >
+                  {option.label}
+                </h2>
+                <p
+                  style={{
+                    margin: "0.75rem 0 0",
+                    color: "#475569",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {option.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (option.route) {
+                    navigate(option.route);
+                    return;
+                  }
+                  alert(`${option.label} page coming soon!`);
+                }}
+                style={{
+                  marginTop: "1.25rem",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "0.95rem 1rem",
+                  fontSize: "1rem",
+                  background: "#4C7EE1",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+              >
+                Open
+              </button>
+            </div>
+          ))}
         </div>
       </section>
 
